@@ -1,10 +1,12 @@
+# Load .env file
+include .env
+
 .PHONY: build
 build:
-	@go build -o bin/main cmd/*.go
+	@go build -o bin/main cmd/api/*.go
 
 .PHONY: run
-run:
-	@go build -o bin/main cmd/*.go
+run: build
 	@./bin/main
 
 .PHONY: clean
@@ -17,10 +19,10 @@ create-migration:
 
 .PHONY: run-migrations
 run-migrations:
-	@migrate -path database/migrations -database postgres://postgres:pass123@localhost:5432/golang?sslmode=disable up
+	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable up
 
 .PHONY: rollback-migrations
 rollback-migrations:
-	@migrate -path database/migrations -database postgres://postgres:pass123@localhost:5432/golang?sslmode=disable down
+	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable down
 	
 	

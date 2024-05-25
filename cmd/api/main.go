@@ -4,13 +4,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/SaiHLu/rest-template/common"
+	database "github.com/SaiHLu/rest-template/database"
+	http "github.com/SaiHLu/rest-template/internal/external/http"
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	common.SetUpDatabaseConnection()
+	var postgresDB = database.SetUpPostgresDatabaseConnection()
 
 	app := fiber.New(fiber.Config{
 		ReadTimeout: time.Second * 5,
@@ -20,7 +21,7 @@ func main() {
 		AppName: "Rest Template",
 	})
 
-	setupRoutes(app)
+	http.SetupRoutes(app, postgresDB)
 
 	log.Fatalln(app.Listen(":8000"), "Server is running on port: 8000")
 }

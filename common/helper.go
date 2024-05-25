@@ -1,6 +1,8 @@
 package common
 
-func FormatValidationMessage(tag string) string {
+import "strconv"
+
+func FormatValidationMessage(tag string, value interface{}) string {
 	switch tag {
 	case "required":
 		return "This field is required"
@@ -9,4 +11,13 @@ func FormatValidationMessage(tag string) string {
 	}
 
 	return ""
+}
+
+func ConvertStringToInt(val string) (int, error) {
+	page, err := strconv.Atoi(val)
+	if err != nil {
+		return 0, err
+	}
+
+	return page, nil
 }
