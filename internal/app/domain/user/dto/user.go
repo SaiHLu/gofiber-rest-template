@@ -1,5 +1,9 @@
 package dto
 
+type ParamUserDto struct {
+	UserId uint `json:"id"`
+}
+
 type QueryUserDto struct {
 	Page     string `json:"page"`
 	PageSize string `json:"pageSize"`

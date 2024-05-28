@@ -9,6 +9,8 @@ import (
 type Service interface {
 	GetAll(dto.QueryUserDto) ([]entity.User, error)
 	Create(dto.CreateUserDto) (entity.User, error)
+	Delete(uint) (entity.User, error)
+	Update(uint, dto.UpdateUserDto) (entity.User, error)
 }
 
 type UserService struct {
@@ -33,7 +35,25 @@ func (u *UserService) GetAll(query dto.QueryUserDto) ([]entity.User, error) {
 func (u *UserService) Create(body dto.CreateUserDto) (entity.User, error) {
 	user, err := u.repo.Create(body)
 	if err != nil {
-		return entity.User{}, nil
+		return entity.User{}, err
+	}
+
+	return user, nil
+}
+
+func (u *UserService) Update(id uint, body dto.UpdateUserDto) (entity.User, error) {
+	user, err := u.repo.Update(id, body)
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	return user, nil
+}
+
+func (u *UserService) Delete(id uint) (entity.User, error) {
+	user, err := u.repo.Delete(id)
+	if err != nil {
+		return entity.User{}, err
 	}
 
 	return user, nil

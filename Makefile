@@ -25,4 +25,3 @@ run-migrations:
 rollback-migrations:
 	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable down
 	
-	
