@@ -10,6 +10,33 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func ParamValidationMiddleware[T any](c *fiber.Ctx) error {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	param := new(T)
+
+	if err := c.ParamsParser(param); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Invalid Payload", err.Error()))
+	}
+
+	if err := validate.Struct(param); err != nil {
+		var validationErrors validator.ValidationErrors
+
+		if errors.As(err, &validationErrors) {
+			customErrorsFormat := make(map[string]string)
+
+			for _, field := range validationErrors {
+				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
+			}
+
+			return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Validation Errors", customErrorsFormat))
+		}
+
+		return c.Status(http.StatusInternalServerError).JSON(common.DefaultErrorResponse("Something went wrong", err))
+	}
+
+	return c.Next()
+}
+
 func QueryValidationMiddleware[T any](c *fiber.Ctx) error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	query := new(T)
@@ -25,11 +52,6 @@ func QueryValidationMiddleware[T any](c *fiber.Ctx) error {
 			customErrorsFormat := make(map[string]string)
 
 			for _, field := range validationErrors {
-				if strings.ToLower(field.Field()) == "workflowtype" {
-					customErrorsFormat["type"] = common.FormatValidationMessage(field.Tag(), field.Value())
-					continue
-				}
-
 				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
 			}
 
@@ -57,11 +79,6 @@ func CreateRequestValidationMiddleware[T any](c *fiber.Ctx) error {
 			customErrorsFormat := make(map[string]string)
 
 			for _, field := range validationErrors {
-				if strings.ToLower(field.Field()) == "workflowtype" {
-					customErrorsFormat["type"] = common.FormatValidationMessage(field.Tag(), field.Value())
-					continue
-				}
-
 				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
 			}
 
@@ -90,7 +107,6 @@ func UpdateRequestValidationMiddleware[T any](c *fiber.Ctx) error {
 		customErrorsFormat := make(map[string]string)
 
 		if errors.As(err, &validationErrors) {
-
 			for _, field := range validationErrors {
 				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
 			}

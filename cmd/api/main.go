@@ -9,11 +9,9 @@ import (
 
 	"github.com/SaiHLu/rest-template/common"
 	database "github.com/SaiHLu/rest-template/database"
-	http "github.com/SaiHLu/rest-template/internal/external/http"
+	"github.com/SaiHLu/rest-template/internal/external/api"
 	"github.com/SaiHLu/rest-template/internal/external/queue"
-	"github.com/SaiHLu/rest-template/internal/external/queue/task"
 	"github.com/gofiber/fiber/v2"
-	"github.com/hibiken/asynq"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -24,28 +22,13 @@ var (
 func main() {
 	var postgresDB = database.SetUpPostgresDatabaseConnection()
 
-	RedisAddr := fmt.Sprintf("%s:%s", common.GetEnv().REDIS_HOST, common.GetEnv().REDIS_PORT)
-	newQueue := queue.NewQueue(RedisAddr)
-	queueClient := newQueue.SetupQueue()
-	defer queueClient.Close()
-
-	task, err := task.NewEmailDeliveryTask(1, "my:template:id")
-	if err != nil {
-		log.Fatalf("could not create task: %v", err)
-	}
-
-	info, err := queueClient.Enqueue(task, asynq.Queue("low"), asynq.ProcessIn(time.Second*10))
-	if err != nil {
-		log.Fatalf("could not start queue: %v", err)
-	}
-
-	log.Printf("enqueued task: type=%s queue=%s\n", info.Type, info.Queue)
+	newQueue := queue.NewQueue(common.GetEnv().REDIS_ADDR)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		newQueue.StartMonitoring()
+		newQueue.MonitorQueues()
 	}()
 
 	wg.Add(1)
@@ -67,7 +50,7 @@ func main() {
 			AppName: "Rest Template",
 		})
 
-		http.SetupRoutes(app, postgresDB)
+		api.SetupRoutes(app, postgresDB)
 
 		log.Fatalln(app.Listen(":8000"), "Server is running on port: 8000")
 	}()

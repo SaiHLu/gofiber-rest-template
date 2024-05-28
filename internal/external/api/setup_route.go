@@ -1,7 +1,7 @@
-package http
+package api
 
 import (
-	"github.com/SaiHLu/rest-template/internal/external/http/route"
+	"github.com/SaiHLu/rest-template/internal/external/api/route"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

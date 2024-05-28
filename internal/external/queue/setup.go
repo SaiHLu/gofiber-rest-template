@@ -16,7 +16,7 @@ func NewQueue(RedisAddr string) *queue {
 	return &queue{RedisAddr}
 }
 
-func (q *queue) SetupQueue() *asynq.Client {
+func (q *queue) SetupQueueClient() *asynq.Client {
 	client := asynq.NewClient(asynq.RedisClientOpt{Addr: q.RedisAddr})
 
 	return client
@@ -39,7 +39,7 @@ func (q *queue) ExecuteQueue() {
 	}
 }
 
-func (q *queue) StartMonitoring() {
+func (q *queue) MonitorQueues() {
 	queueMonitor := asynqmon.New(asynqmon.Options{
 		RootPath:     "/monitoring",
 		RedisConnOpt: asynq.RedisClientOpt{Addr: q.RedisAddr},
