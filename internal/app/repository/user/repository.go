@@ -1,7 +1,7 @@
-package repository
+package user
 
 import (
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/dto"
+	"github.com/SaiHLu/rest-template/internal/app/dto"
 	"github.com/SaiHLu/rest-template/internal/app/entity"
 )
 

@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/SaiHLu/rest-template/common"
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/service"
-	"github.com/SaiHLu/rest-template/internal/infrastructure/auth/dto"
+	"github.com/SaiHLu/rest-template/internal/app/dto"
+	"github.com/SaiHLu/rest-template/internal/app/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"

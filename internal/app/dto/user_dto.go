@@ -1,7 +1,7 @@
 package dto
 
 type ParamUserDto struct {
-	UserId uint `json:"id"`
+	Id uint `json:"id"`
 }
 
 type QueryUserDto struct {

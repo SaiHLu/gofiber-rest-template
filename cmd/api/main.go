@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/SaiHLu/rest-template/common"
-	database "github.com/SaiHLu/rest-template/database"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/cache"
 	api "github.com/SaiHLu/rest-template/internal/infrastructure/interface"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/persistence/database"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/queue"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/storage/redis/v3"

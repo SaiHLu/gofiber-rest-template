@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/dto"
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/repository"
+	"github.com/SaiHLu/rest-template/internal/app/dto"
 	"github.com/SaiHLu/rest-template/internal/app/entity"
+	"github.com/SaiHLu/rest-template/internal/app/repository/user"
 )
 
 type UserService interface {
@@ -15,10 +15,10 @@ type UserService interface {
 }
 
 type service struct {
-	repo repository.UserRepository
+	repo user.UserRepository
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
+func NewUserService(repo user.UserRepository) UserService {
 	return &service{
 		repo: repo,
 	}

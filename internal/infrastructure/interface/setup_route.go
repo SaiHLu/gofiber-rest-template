@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/SaiHLu/rest-template/common"
-	postgresrepository "github.com/SaiHLu/rest-template/internal/app/domain/user/repository"
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/service"
+	"github.com/SaiHLu/rest-template/internal/app/repository/user"
+	"github.com/SaiHLu/rest-template/internal/app/service"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/cache/repository"
 	cacheService "github.com/SaiHLu/rest-template/internal/infrastructure/cache/service"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/interface/controller"
@@ -18,7 +18,7 @@ import (
 )
 
 func SetupRoutes(app *fiber.App, postgresDB *gorm.DB, cacheStore *redis.Storage) {
-	userRepository := postgresrepository.NewPostgresRepository(postgresDB)
+	userRepository := user.NewPostgresRepository(postgresDB)
 	userService := service.NewUserService(userRepository)
 	userController := controller.NewUserController(userService)
 	authController := controller.NewAuthController(userService)

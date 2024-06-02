@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/SaiHLu/rest-template/common"
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/dto"
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/service"
+	"github.com/SaiHLu/rest-template/internal/app/dto"
+	"github.com/SaiHLu/rest-template/internal/app/service"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/queue"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/queue/task"
 	"github.com/gofiber/fiber/v2"
@@ -74,7 +74,7 @@ func (u *UserController) Update(c *fiber.Ctx) error {
 	_ = c.ParamsParser(&userId)
 	_ = c.BodyParser(&body)
 
-	user, err := u.userService.Update(userId.UserId, body)
+	user, err := u.userService.Update(userId.Id, body)
 	if err != nil {
 		return c.JSON(err.Error())
 	}
@@ -87,7 +87,7 @@ func (u *UserController) Delete(c *fiber.Ctx) error {
 
 	_ = c.ParamsParser(&param)
 
-	user, err := u.userService.Delete(param.UserId)
+	user, err := u.userService.Delete(param.Id)
 	if err != nil {
 		return c.JSON(err.Error())
 	}

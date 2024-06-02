@@ -1,10 +1,10 @@
-package repository
+package user
 
 import (
 	"errors"
 
 	"github.com/SaiHLu/rest-template/common"
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/dto"
+	"github.com/SaiHLu/rest-template/internal/app/dto"
 	"github.com/SaiHLu/rest-template/internal/app/entity"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

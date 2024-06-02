@@ -1,7 +1,7 @@
 package route
 
 import (
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/dto"
+	"github.com/SaiHLu/rest-template/internal/app/dto"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/interface/controller"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/interface/middleware"
 	"github.com/gofiber/fiber/v2"

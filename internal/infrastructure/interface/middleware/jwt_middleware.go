@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/service"
 	"github.com/SaiHLu/rest-template/internal/app/entity"
+	"github.com/SaiHLu/rest-template/internal/app/service"
 	cache "github.com/SaiHLu/rest-template/internal/infrastructure/cache/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
