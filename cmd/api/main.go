@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"runtime"
@@ -18,7 +19,8 @@ import (
 )
 
 var (
-	wg sync.WaitGroup
+	wg  sync.WaitGroup
+	ctx = context.Background()
 )
 
 func main() {
@@ -31,6 +33,9 @@ func main() {
 		TLSConfig: nil,
 		PoolSize:  10 * runtime.GOMAXPROCS(0),
 	})
+	if err := cacheStore.Ping(ctx); err != nil {
+		log.Fatal("Redis connection failed.")
+	}
 
 	wg.Add(1)
 	go func() {

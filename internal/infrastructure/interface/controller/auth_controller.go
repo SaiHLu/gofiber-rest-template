@@ -34,7 +34,7 @@ func (a *AuthController) Login(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"password": err.Error()})
 	}
 
-	expireTime := time.Now().Add(time.Second * 10000).Unix()
+	expireTime := time.Now().Add(time.Second * time.Duration(common.GetEnv().JWT_TTL)).Unix()
 	claims := jwt.MapClaims{
 		"id":  user.ID,
 		"exp": expireTime,

@@ -22,6 +22,7 @@ type envConfig struct {
 
 	// Jwt
 	JWT_SECRET string
+	JWT_TTL    int
 }
 
 func GetEnv() *envConfig {
@@ -31,7 +32,13 @@ func GetEnv() *envConfig {
 	}
 
 	REDIS_ADDR := fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
+
 	REDIS_PORT, err := strconv.Atoi(os.Getenv("REDIS_PORT"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	JWT_TTL, err := strconv.Atoi(os.Getenv("JWT_TTL"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,5 +56,6 @@ func GetEnv() *envConfig {
 		REDIS_ADDR: REDIS_ADDR,
 		// Jwt
 		JWT_SECRET: os.Getenv("JWT_SECRET"),
+		JWT_TTL:    JWT_TTL,
 	}
 }
