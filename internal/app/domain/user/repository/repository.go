@@ -7,6 +7,7 @@ import (
 
 type UserRepository interface {
 	GetAll(dto.QueryUserDto) ([]entity.User, error)
+	GetOne(map[string]interface{}) (entity.User, error)
 	Create(dto.CreateUserDto) (entity.User, error)
 	Delete(uint) (entity.User, error)
 	Update(uint, dto.UpdateUserDto) (entity.User, error)

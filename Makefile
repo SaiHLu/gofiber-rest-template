@@ -15,13 +15,13 @@ clean:
 
 .PHONY: create-migration
 create-migration:
-	@migrate create -ext sql -dir database/migrations -format "unix" $(file-name)
+	@migrate create -ext sql -dir database/migrations -format "unix" $(name)
 
 .PHONY: run-migrations
 run-migrations:
-	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable up
+	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable up $(steps)
 
 .PHONY: rollback-migrations
 rollback-migrations:
-	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable down
+	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable down $(steps)
 	

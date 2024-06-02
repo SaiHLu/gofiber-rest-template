@@ -1,11 +1,10 @@
-package postgresrepository
+package repository
 
 import (
 	"errors"
 
 	"github.com/SaiHLu/rest-template/common"
 	"github.com/SaiHLu/rest-template/internal/app/domain/user/dto"
-	"github.com/SaiHLu/rest-template/internal/app/domain/user/repository"
 	"github.com/SaiHLu/rest-template/internal/app/entity"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -15,7 +14,7 @@ type postgresRepository struct {
 	db *gorm.DB
 }
 
-func NewPostgresRepository(db *gorm.DB) repository.UserRepository {
+func NewPostgresRepository(db *gorm.DB) UserRepository {
 	return &postgresRepository{
 		db: db,
 	}
@@ -36,10 +35,21 @@ func (r *postgresRepository) GetAll(query dto.QueryUserDto) ([]entity.User, erro
 	return users, nil
 }
 
+func (r *postgresRepository) GetOne(conditions map[string]interface{}) (entity.User, error) {
+	var user entity.User
+
+	if err := r.db.Model(&entity.User{}).Where(conditions).First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
 func (r *postgresRepository) Create(body dto.CreateUserDto) (entity.User, error) {
 	var user = entity.User{
-		Name:  &body.Name,
-		Email: body.Email,
+		Name:     &body.Name,
+		Email:    body.Email,
+		Password: body.Password,
 	}
 
 	result := r.db.Model(&entity.User{}).Create(&user)

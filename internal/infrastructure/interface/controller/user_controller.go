@@ -7,17 +7,18 @@ import (
 	"github.com/SaiHLu/rest-template/common"
 	"github.com/SaiHLu/rest-template/internal/app/domain/user/dto"
 	"github.com/SaiHLu/rest-template/internal/app/domain/user/service"
-	"github.com/SaiHLu/rest-template/internal/external/queue"
-	"github.com/SaiHLu/rest-template/internal/external/queue/task"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/queue"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/queue/task"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hibiken/asynq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserController struct {
-	userService service.Service
+	userService service.UserService
 }
 
-func NewUserController(userService service.Service) *UserController {
+func NewUserController(userService service.UserService) *UserController {
 	return &UserController{
 		userService: userService,
 	}
@@ -36,10 +37,28 @@ func (u *UserController) GetAll(c *fiber.Ctx) error {
 	return c.JSON(users)
 }
 
+func (u *UserController) GetOne(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	user, err := u.userService.GetOne(map[string]interface{}{"id": id})
+	if err != nil {
+		return c.JSON(err.Error())
+	}
+
+	return c.JSON(user)
+}
+
 func (u *UserController) Create(c *fiber.Ctx) error {
 	var body dto.CreateUserDto
 
 	_ = c.BodyParser(&body)
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+	if err != nil {
+		return c.JSON(err.Error())
+	}
+
+	body.Password = string(hashedPassword)
 	user, err := u.userService.Create(body)
 	if err != nil {
 		return c.JSON(err.Error())

@@ -6,24 +6,25 @@ import (
 	"github.com/SaiHLu/rest-template/internal/app/entity"
 )
 
-type Service interface {
+type UserService interface {
 	GetAll(dto.QueryUserDto) ([]entity.User, error)
+	GetOne(map[string]interface{}) (entity.User, error)
 	Create(dto.CreateUserDto) (entity.User, error)
 	Delete(uint) (entity.User, error)
 	Update(uint, dto.UpdateUserDto) (entity.User, error)
 }
 
-type UserService struct {
+type service struct {
 	repo repository.UserRepository
 }
 
-func NewUserService(repo repository.UserRepository) Service {
-	return &UserService{
+func NewUserService(repo repository.UserRepository) UserService {
+	return &service{
 		repo: repo,
 	}
 }
 
-func (u *UserService) GetAll(query dto.QueryUserDto) ([]entity.User, error) {
+func (u *service) GetAll(query dto.QueryUserDto) ([]entity.User, error) {
 	users, err := u.repo.GetAll(query)
 	if err != nil {
 		return []entity.User{}, err
@@ -32,7 +33,16 @@ func (u *UserService) GetAll(query dto.QueryUserDto) ([]entity.User, error) {
 	return users, nil
 }
 
-func (u *UserService) Create(body dto.CreateUserDto) (entity.User, error) {
+func (u *service) GetOne(conditions map[string]interface{}) (entity.User, error) {
+	user, err := u.repo.GetOne(conditions)
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	return user, nil
+}
+
+func (u *service) Create(body dto.CreateUserDto) (entity.User, error) {
 	user, err := u.repo.Create(body)
 	if err != nil {
 		return entity.User{}, err
@@ -41,7 +51,7 @@ func (u *UserService) Create(body dto.CreateUserDto) (entity.User, error) {
 	return user, nil
 }
 
-func (u *UserService) Update(id uint, body dto.UpdateUserDto) (entity.User, error) {
+func (u *service) Update(id uint, body dto.UpdateUserDto) (entity.User, error) {
 	user, err := u.repo.Update(id, body)
 	if err != nil {
 		return entity.User{}, err
@@ -50,7 +60,7 @@ func (u *UserService) Update(id uint, body dto.UpdateUserDto) (entity.User, erro
 	return user, nil
 }
 
-func (u *UserService) Delete(id uint) (entity.User, error) {
+func (u *service) Delete(id uint) (entity.User, error) {
 	user, err := u.repo.Delete(id)
 	if err != nil {
 		return entity.User{}, err

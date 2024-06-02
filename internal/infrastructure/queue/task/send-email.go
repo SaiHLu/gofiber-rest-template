@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
-	queuetype "github.com/SaiHLu/rest-template/internal/external/queue/type"
+	queuetype "github.com/SaiHLu/rest-template/internal/infrastructure/queue/type"
 	"github.com/hibiken/asynq"
 )
 

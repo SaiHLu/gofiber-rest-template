@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	queuetype "github.com/SaiHLu/rest-template/internal/external/queue/type"
-	"github.com/SaiHLu/rest-template/internal/external/queue/worker"
+	queuetype "github.com/SaiHLu/rest-template/internal/infrastructure/queue/type"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/queue/worker"
 	"github.com/hibiken/asynq"
 )
 

@@ -1,0 +1,7 @@
+ALTER TABLE users
+DROP COLUMN IF EXISTS password,
+DROP COLUMN IF EXISTS created_at,
+DROP COLUMN IF EXISTS updated_at,
+DROP COLUMN IF EXISTS deleted_at;
+
+DROP INDEX IF EXISTS idx_deleted_at;

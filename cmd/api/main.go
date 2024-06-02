@@ -9,9 +9,11 @@ import (
 
 	"github.com/SaiHLu/rest-template/common"
 	database "github.com/SaiHLu/rest-template/database"
-	"github.com/SaiHLu/rest-template/internal/external/api"
-	"github.com/SaiHLu/rest-template/internal/external/queue"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/cache"
+	api "github.com/SaiHLu/rest-template/internal/infrastructure/interface"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/queue"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/storage/redis/v3"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -20,9 +22,15 @@ var (
 )
 
 func main() {
-	var postgresDB = database.SetUpPostgresDatabaseConnection()
-
+	postgresDB := database.SetUpPostgresDatabaseConnection()
 	newQueue := queue.NewQueue(common.GetEnv().REDIS_ADDR)
+	cacheStore := cache.NewRedisClient(redis.Config{
+		Host:      common.GetEnv().REDIS_HOST,
+		Port:      common.GetEnv().REDIS_PORT,
+		Reset:     false,
+		TLSConfig: nil,
+		PoolSize:  10 * runtime.GOMAXPROCS(0),
+	})
 
 	wg.Add(1)
 	go func() {
@@ -50,7 +58,7 @@ func main() {
 			AppName: "Rest Template",
 		})
 
-		api.SetupRoutes(app, postgresDB)
+		api.SetupRoutes(app, postgresDB, cacheStore.Client)
 
 		log.Fatalln(app.Listen(":8000"), "Server is running on port: 8000")
 	}()

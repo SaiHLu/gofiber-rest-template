@@ -17,8 +17,11 @@ type envConfig struct {
 
 	//  Redis
 	REDIS_HOST string
-	REDIS_PORT string
+	REDIS_PORT int
 	REDIS_ADDR string
+
+	// Jwt
+	JWT_SECRET string
 }
 
 func GetEnv() *envConfig {
@@ -28,6 +31,10 @@ func GetEnv() *envConfig {
 	}
 
 	REDIS_ADDR := fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
+	REDIS_PORT, err := strconv.Atoi(os.Getenv("REDIS_PORT"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return &envConfig{
 		// DB
@@ -38,7 +45,9 @@ func GetEnv() *envConfig {
 		POSTGRESDB_PASSWORD: os.Getenv("POSTGRESDB_PASSWORD"),
 		// REDIS
 		REDIS_HOST: os.Getenv("REDIS_HOST"),
-		REDIS_PORT: os.Getenv("REDIS_PORT"),
+		REDIS_PORT: REDIS_PORT,
 		REDIS_ADDR: REDIS_ADDR,
+		// Jwt
+		JWT_SECRET: os.Getenv("JWT_SECRET"),
 	}
 }

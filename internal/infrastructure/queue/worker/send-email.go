@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/SaiHLu/rest-template/internal/external/queue/task"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/queue/task"
 	"github.com/hibiken/asynq"
 )
 
