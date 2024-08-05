@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/SaiHLu/rest-template/common"
-	"github.com/SaiHLu/rest-template/internal/app/dto"
-	"github.com/SaiHLu/rest-template/internal/app/service"
+	"github.com/SaiHLu/rest-template/internal/core/dto"
+	"github.com/SaiHLu/rest-template/internal/core/service"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/queue"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/queue/task"
 	"github.com/gofiber/fiber/v2"
@@ -38,9 +38,11 @@ func (u *UserController) GetAll(c *fiber.Ctx) error {
 }
 
 func (u *UserController) GetOne(c *fiber.Ctx) error {
-	id := c.Params("id")
+	var id dto.IdParamUserDto
 
-	user, err := u.userService.GetOne(map[string]interface{}{"id": id})
+	_ = c.ParamsParser(&id)
+
+	user, err := u.userService.GetOneById(id.ID)
 	if err != nil {
 		return c.JSON(err.Error())
 	}

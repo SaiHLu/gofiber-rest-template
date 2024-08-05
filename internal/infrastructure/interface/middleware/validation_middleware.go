@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/SaiHLu/rest-template/common"
+	"github.com/SaiHLu/rest-template/common/presenter"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,7 +16,7 @@ func ParamValidationMiddleware[T any](c *fiber.Ctx) error {
 	param := new(T)
 
 	if err := c.ParamsParser(param); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Invalid Payload", err.Error()))
+		return c.Status(http.StatusBadRequest).JSON(presenter.ErrorJsonResponse("Invalid Payload", err.Error()))
 	}
 
 	if err := validate.Struct(param); err != nil {
@@ -28,10 +29,10 @@ func ParamValidationMiddleware[T any](c *fiber.Ctx) error {
 				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
 			}
 
-			return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Validation Errors", customErrorsFormat))
+			return c.Status(http.StatusBadRequest).JSON(presenter.ErrorJsonResponse("Validation Errors", customErrorsFormat))
 		}
 
-		return c.Status(http.StatusInternalServerError).JSON(common.DefaultErrorResponse("Something went wrong", err))
+		return c.Status(http.StatusInternalServerError).JSON(presenter.ErrorJsonResponse("Something went wrong", err))
 	}
 
 	return c.Next()
@@ -42,7 +43,7 @@ func QueryValidationMiddleware[T any](c *fiber.Ctx) error {
 	query := new(T)
 
 	if err := c.QueryParser(query); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Invalid Payload", err.Error()))
+		return c.Status(http.StatusBadRequest).JSON(presenter.ErrorJsonResponse("Invalid Payload", err.Error()))
 	}
 
 	if err := validate.Struct(query); err != nil {
@@ -55,10 +56,10 @@ func QueryValidationMiddleware[T any](c *fiber.Ctx) error {
 				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
 			}
 
-			return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Validation Errors", customErrorsFormat))
+			return c.Status(http.StatusBadRequest).JSON(presenter.ErrorJsonResponse("Validation Errors", customErrorsFormat))
 		}
 
-		return c.Status(http.StatusInternalServerError).JSON(common.DefaultErrorResponse("Something went wrong", err))
+		return c.Status(http.StatusInternalServerError).JSON(presenter.ErrorJsonResponse("Something went wrong", err))
 	}
 
 	return c.Next()
@@ -69,7 +70,7 @@ func CreateRequestValidationMiddleware[T any](c *fiber.Ctx) error {
 	body := new(T)
 
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Incorrect Payload", err.Error()))
+		return c.Status(http.StatusBadRequest).JSON(presenter.ErrorJsonResponse("Incorrect Payload", err.Error()))
 	}
 
 	if err := validate.Struct(body); err != nil {
@@ -82,10 +83,10 @@ func CreateRequestValidationMiddleware[T any](c *fiber.Ctx) error {
 				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
 			}
 
-			return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("Validation Errors", customErrorsFormat))
+			return c.Status(http.StatusBadRequest).JSON(presenter.ErrorJsonResponse("Validation Errors", customErrorsFormat))
 		}
 
-		return c.Status(http.StatusInternalServerError).JSON(common.DefaultErrorResponse("Something went wrong", err))
+		return c.Status(http.StatusInternalServerError).JSON(presenter.ErrorJsonResponse("Something went wrong", err))
 	}
 
 	return c.Next()
@@ -111,10 +112,10 @@ func UpdateRequestValidationMiddleware[T any](c *fiber.Ctx) error {
 				customErrorsFormat[strings.ToLower(field.Field())] = common.FormatValidationMessage(field.Tag(), field.Value())
 			}
 
-			return c.Status(http.StatusBadRequest).JSON(common.DefaultErrorResponse("validation errors", customErrorsFormat))
+			return c.Status(http.StatusBadRequest).JSON(presenter.ErrorJsonResponse("validation errors", customErrorsFormat))
 		}
 
-		return c.Status(http.StatusInternalServerError).JSON(common.DefaultErrorResponse("Something went wrong", err))
+		return c.Status(http.StatusInternalServerError).JSON(presenter.ErrorJsonResponse("Something went wrong", err))
 	}
 
 	return c.Next()

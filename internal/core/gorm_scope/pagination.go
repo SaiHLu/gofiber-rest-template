@@ -1,4 +1,4 @@
-package common
+package gormscope
 
 import (
 	"gorm.io/gorm"

@@ -1,4 +1,4 @@
-package common
+package gormscope
 
 import (
 	"strings"
@@ -39,15 +39,17 @@ func getQueryKeyValue(key, value string) (string, string) {
 	return key, value
 }
 
-func Filter(db *gorm.DB, filter string) *gorm.DB {
-	fields := strings.Split(filter, ",")
-	for _, field := range fields {
-		values := strings.Split(field, ":")
-		if len(values) >= 2 {
-			key, value := getQueryKeyValue(values[0], values[1])
-			db = db.Where(key, value)
+func QueryFilter(query string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		fields := strings.Split(query, ",")
+		for _, field := range fields {
+			values := strings.Split(field, ":")
+			if len(values) >= 2 {
+				key, value := getQueryKeyValue(values[0], values[1])
+				db = db.Where(key, value)
+			}
 		}
-	}
 
-	return db
+		return db
+	}
 }

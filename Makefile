@@ -13,15 +13,15 @@ run: build
 clean:
 	rm -rf ./bin
 
-.PHONY: create-migration
-create-migration:
-	@migrate create -ext sql -dir database/migrations -format "unix" $(name)
+.PHONY: make-migration
+make-migration:
+	@migrate create -ext sql -dir database/migration -format "unix" $(name)
 
-.PHONY: run-migrations
-run-migrations:
-	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable up $(steps)
+.PHONY: migrate
+migrate:
+	@migrate -path database/migration -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable up $(steps)
 
-.PHONY: rollback-migrations
-rollback-migrations:
-	@migrate -path database/migrations -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable down $(steps)
+.PHONY: migrate-rollback
+migrate-rollback:
+	@migrate -path database/migration -database postgres://$(POSTGRESDB_USERNAME):$(POSTGRESDB_PASSWORD)@$(POSTGRESDB_HOST):$(POSTGRESDB_PORT)/postgres?sslmode=disable down $(steps)
 	

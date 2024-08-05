@@ -4,48 +4,61 @@ import (
 	"time"
 
 	"github.com/SaiHLu/rest-template/common"
-	"github.com/SaiHLu/rest-template/internal/app/dto"
-	"github.com/SaiHLu/rest-template/internal/app/service"
+	"github.com/SaiHLu/rest-template/common/constant"
+	"github.com/SaiHLu/rest-template/common/logger"
+	"github.com/SaiHLu/rest-template/common/presenter"
+	"github.com/SaiHLu/rest-template/internal/core/dto"
+	"github.com/SaiHLu/rest-template/internal/core/service"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/application/token"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/cache"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthController struct {
-	authService service.UserService
+	authService  service.UserService
+	cacheStorage cache.Cache
 }
 
-func NewAuthController(authService service.UserService) *AuthController {
+func NewAuthController(authService service.UserService, cacheStorage cache.Cache) *AuthController {
 	return &AuthController{
-		authService: authService,
+		authService:  authService,
+		cacheStorage: cacheStorage,
 	}
 }
+
+var (
+	accessTokenTTL  = time.Second * time.Duration(common.GetEnv().ACCESS_TOKEN_TTL)
+	refreshTokenTTL = time.Second * time.Duration(common.GetEnv().REFRESH_TOKEN_TTL)
+)
 
 func (a *AuthController) Login(c *fiber.Ctx) error {
 	var body dto.LoginDto
 	_ = c.BodyParser(&body)
 
-	user, err := a.authService.GetOne(map[string]interface{}{"email": body.Email})
+	user, err := a.authService.GetOneByEmail(body.Email)
 	if err != nil {
-		return c.JSON(err.Error())
+		return c.Status(fiber.StatusUnauthorized).JSON(presenter.ErrorJsonResponse("Invalid Credentials.", err.Error()))
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return c.JSON(fiber.Map{"password": err.Error()})
+		return c.Status(fiber.StatusUnauthorized).JSON(presenter.ErrorJsonResponse("Invalid Credentials.", err.Error()))
 	}
 
-	expireTime := time.Now().Add(time.Second * time.Duration(common.GetEnv().JWT_TTL)).Unix()
-	claims := jwt.MapClaims{
-		"id":  user.ID,
-		"exp": expireTime,
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	t, err := token.SignedString([]byte(common.GetEnv().JWT_SECRET))
+	accessToken, err := token.GenerateAccessToken(user.ID, time.Now().Add(accessTokenTTL).Unix())
 	if err != nil {
-		return c.SendStatus(fiber.StatusInternalServerError)
+		logger.Error(err.Error())
+		return c.Status(fiber.StatusUnauthorized).JSON(presenter.ErrorJsonResponse("Invalid Credentials.", err.Error()))
 	}
 
-	return c.JSON(t)
+	refreshToken, err := token.GenerateRefreshToken(user.ID, time.Now().Add(refreshTokenTTL).Unix())
+	if err != nil {
+		logger.Error(err.Error())
+		return c.Status(fiber.StatusUnauthorized).JSON(presenter.ErrorJsonResponse("Invalid Credentials.", err.Error()))
+	}
+
+	a.cacheStorage.Set(constant.GetAccessToken(user.ID), []byte(accessToken), accessTokenTTL)
+	a.cacheStorage.Set(constant.GetRefreshToken(user.ID), []byte(refreshToken), refreshTokenTTL)
+
+	return c.Status(fiber.StatusOK).JSON(presenter.SuccessJsonResponse(map[string]string{"accessToken": accessToken}, "Login Success"))
 }

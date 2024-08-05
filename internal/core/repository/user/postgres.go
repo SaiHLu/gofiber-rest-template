@@ -4,8 +4,10 @@ import (
 	"errors"
 
 	"github.com/SaiHLu/rest-template/common"
-	"github.com/SaiHLu/rest-template/internal/app/dto"
-	"github.com/SaiHLu/rest-template/internal/app/entity"
+	"github.com/SaiHLu/rest-template/common/logger"
+	"github.com/SaiHLu/rest-template/internal/core/dto"
+	"github.com/SaiHLu/rest-template/internal/core/entity"
+	gormscope "github.com/SaiHLu/rest-template/internal/core/gorm_scope"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -21,24 +23,31 @@ func NewPostgresRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *postgresRepository) GetAll(query dto.QueryUserDto) ([]entity.User, error) {
-	var users []entity.User
+	var (
+		users []entity.User
+		count int64
+	)
 
-	page, _ := common.ConvertStringToInt(query.Page)
-	pageSize, _ := common.ConvertStringToInt(query.PageSize)
+	limit, _ := common.ConvertStringToInt(query.Limit)
+	offset, _ := common.ConvertStringToInt(query.Offset)
 
-	result := r.db.Model(&entity.User{}).Scopes(common.Paginate(page, pageSize)).Find(&users)
+	if err := r.db.Model(&entity.User{}).Scopes(gormscope.QueryFilter(query.Query), gormscope.OrderBy(query.Order), gormscope.Paginate(limit, offset)).Find(&users).Error; err != nil {
+		logger.Error(err.Error())
+		return users, err
+	}
 
-	if result.Error != nil {
-		return []entity.User{}, result.Error
+	if err := r.db.Model(&entity.User{}).Scopes(gormscope.QueryFilter(query.Query), gormscope.OrderBy(query.Order)).Count(&count).Error; err != nil {
+		logger.Error(err.Error())
+		return users, err
 	}
 
 	return users, nil
 }
 
-func (r *postgresRepository) GetOne(conditions map[string]interface{}) (entity.User, error) {
+func (r *postgresRepository) GetOne(conditions ...gormscope.Condition) (entity.User, error) {
 	var user entity.User
 
-	if err := r.db.Model(&entity.User{}).Where(conditions).First(&user).Error; err != nil {
+	if err := r.db.Model(&entity.User{}).Scopes(gormscope.WhereCondition(conditions...)).First(&user).Error; err != nil {
 		return user, err
 	}
 

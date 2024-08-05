@@ -1,13 +1,20 @@
 package dto
 
+import "github.com/google/uuid"
+
 type ParamUserDto struct {
 	Id uint `json:"id"`
 }
 
 type QueryUserDto struct {
-	Page     string `json:"page"`
-	PageSize string `json:"pageSize"`
-	Search   string `json:"search"`
+	Query  string `json:"query"`
+	Limit  string `json:"limit"`
+	Offset string `json:"offset"`
+	Order  string `json:"order"`
+}
+
+type IdParamUserDto struct {
+	ID uuid.UUID `json:"id" validate:"uuid"`
 }
 
 type CreateUserDto struct {

@@ -23,14 +23,14 @@ var newLogger = logger.New(
 	},
 )
 
-func SetUpPostgresDatabaseConnection() *gorm.DB {
+func SetUpPostgresDatabaseConnection() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%v sslmode=disable", common.GetEnv().POSTGRESDB_HOST, common.GetEnv().POSTGRESDB_USERNAME, common.GetEnv().POSTGRESDB_PASSWORD, common.GetEnv().POSTGRESDB_DB, common.GetEnv().POSTGRESDB_PORT)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{TranslateError: true, Logger: newLogger})
 
 	if err != nil {
-		log.Fatal("Failed to connect database.")
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }

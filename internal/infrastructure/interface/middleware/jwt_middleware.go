@@ -2,22 +2,22 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"time"
 
-	"github.com/SaiHLu/rest-template/internal/app/entity"
-	"github.com/SaiHLu/rest-template/internal/app/service"
-	cache "github.com/SaiHLu/rest-template/internal/infrastructure/cache/service"
+	"github.com/SaiHLu/rest-template/common/logger"
+	"github.com/SaiHLu/rest-template/internal/core/entity"
+	"github.com/SaiHLu/rest-template/internal/core/service"
+	"github.com/SaiHLu/rest-template/internal/infrastructure/cache"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
-func JwtMiddleware(userService service.UserService, cacheService cache.CacheService) func(*fiber.Ctx) error {
+func JwtMiddleware(userService service.UserService, cacheStorage cache.Cache) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		tokenInfo := c.Locals("user").(*jwt.Token)
 		claims := tokenInfo.Claims.(jwt.MapClaims)
-		userId := int64(claims["id"].(float64))
+		userId := claims["id"].(uuid.UUID)
 		var (
 			user       entity.User
 			err        error
@@ -27,25 +27,25 @@ func JwtMiddleware(userService service.UserService, cacheService cache.CacheServ
 
 		expireTime, err = claims.GetExpirationTime()
 		if err != nil {
-			log.Println("Expire Time Error: ", err.Error())
+			logger.Error(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
 		}
 
-		cachedUser, err = cacheService.Get(fmt.Sprintf("%d", userId))
+		cachedUser, err = cacheStorage.Get(userId.String())
 		if err != nil {
-			log.Println("cache Error: ", err.Error())
+			logger.Error(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
 		}
 
 		if len(cachedUser) != 0 {
 			if err = json.Unmarshal(cachedUser, &user); err != nil {
-				log.Println("Json Unmarshal Error: ", err.Error())
+				logger.Error(err.Error())
 				return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
 			}
 
 			c.Locals("authUser", user)
 		} else {
-			user, err = userService.GetOne(map[string]interface{}{"id": userId})
+			user, err = userService.GetOneById(userId)
 			if err != nil {
 				return c.Status(fiber.StatusUnauthorized).JSON(err.Error())
 			}
@@ -53,11 +53,11 @@ func JwtMiddleware(userService service.UserService, cacheService cache.CacheServ
 			c.Locals("authUser", user)
 			cachedUser, err = json.Marshal(user)
 			if err != nil {
-				log.Println("Json Marshal Error: ", err.Error())
+				logger.Error(err.Error())
 				return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
 			}
 
-			cacheService.Set(fmt.Sprintf("%d", user.ID), cachedUser, time.Until(expireTime.Time))
+			cacheStorage.Set(user.ID.String(), cachedUser, time.Until(expireTime.Time))
 		}
 
 		return c.Next()

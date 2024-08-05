@@ -1,8 +1,8 @@
-package common
+package presenter
 
 import "github.com/gofiber/fiber/v2"
 
-func DefaultSuccessResponse(data any, message string) *fiber.Map {
+func SuccessJsonResponse(data any, message string) *fiber.Map {
 	return &fiber.Map{
 		"success": true,
 		"message": message,
@@ -11,7 +11,7 @@ func DefaultSuccessResponse(data any, message string) *fiber.Map {
 	}
 }
 
-func DefaultErrorResponse(message string, err any) *fiber.Map {
+func ErrorJsonResponse(message string, err any) *fiber.Map {
 	return &fiber.Map{
 		"success": false,
 		"message": message,

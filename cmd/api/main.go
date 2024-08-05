@@ -2,74 +2,88 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"os"
+	"os/signal"
 	"runtime"
-	"sync"
+	"syscall"
 	"time"
 
 	"github.com/SaiHLu/rest-template/common"
+	"github.com/SaiHLu/rest-template/common/logger"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/cache"
 	api "github.com/SaiHLu/rest-template/internal/infrastructure/interface"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/persistence/database"
-	"github.com/SaiHLu/rest-template/internal/infrastructure/queue"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/storage/redis/v3"
 	_ "github.com/joho/godotenv/autoload"
 )
 
-var (
-	wg  sync.WaitGroup
-	ctx = context.Background()
-)
-
 func main() {
-	postgresDB := database.SetUpPostgresDatabaseConnection()
-	newQueue := queue.NewQueue(common.GetEnv().REDIS_ADDR)
-	cacheStore := cache.NewRedisClient(redis.Config{
+	var (
+		ctx, cancel = context.WithCancel(context.Background())
+		sig         = make(chan os.Signal, 1)
+	)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+
+	app := fiber.New(fiber.Config{
+		ReadTimeout: time.Minute * 5,
+		ColorScheme: fiber.Colors{
+			Green: fiber.DefaultColors.Green,
+		},
+		AppName: "Rest Template",
+	})
+
+	go func() {
+		<-sig
+		cancel()
+
+		if err := app.Shutdown(); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+
+	postgresDB, err := database.SetUpPostgresDatabaseConnection()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	cacheStorage := cache.NewRedisCache(redis.Config{
 		Host:      common.GetEnv().REDIS_HOST,
 		Port:      common.GetEnv().REDIS_PORT,
 		Reset:     false,
 		TLSConfig: nil,
 		PoolSize:  10 * runtime.GOMAXPROCS(0),
 	})
-	if err := cacheStore.Ping(ctx); err != nil {
-		log.Fatal("Redis connection failed.")
+	if err := cacheStorage.Ping(); err != nil {
+		logger.Error("Redis connection failed.")
+		os.Exit(1)
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	defer func() {
+		sqlDb, err := postgresDB.DB()
+		if err != nil {
+			logger.Error(err.Error())
+		}
 
-		newQueue.MonitorQueues()
+		if err := sqlDb.Close(); err != nil {
+			logger.Error(err.Error())
+		}
+
+		if err := cacheStorage.Close(); err != nil {
+			logger.Error(err.Error())
+		}
 	}()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	api.SetupRoutes(app, postgresDB, cacheStorage)
 
-		newQueue.ExecuteQueue()
+	go func() {
+		if err := app.Listen(":8000"); err != nil {
+			logger.Error(err.Error())
+			os.Exit(1)
+		}
 	}()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		app := fiber.New(fiber.Config{
-			ReadTimeout: time.Second * 5,
-			ColorScheme: fiber.Colors{
-				Green: fiber.DefaultColors.Green,
-			},
-			AppName: "Rest Template",
-		})
-
-		api.SetupRoutes(app, postgresDB, cacheStore.Client)
-
-		log.Fatalln(app.Listen(":8000"), "Server is running on port: 8000")
-	}()
-
-	numGoroutines := runtime.NumGoroutine()
-	fmt.Printf("Number of active goroutines: %d\n", numGoroutines)
-
-	wg.Wait()
+	<-ctx.Done()
+	logger.Info("Exited")
 }
