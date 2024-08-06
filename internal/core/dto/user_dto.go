@@ -3,7 +3,7 @@ package dto
 import "github.com/google/uuid"
 
 type ParamUserDto struct {
-	Id uint `json:"id"`
+	Id uuid.UUID `json:"id" validate:"uuid"`
 }
 
 type QueryUserDto struct {

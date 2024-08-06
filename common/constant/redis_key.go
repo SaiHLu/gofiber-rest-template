@@ -7,9 +7,13 @@ import (
 )
 
 func GetAccessToken(userId uuid.UUID) string {
-	return fmt.Sprintf("accessToken%s", userId.String())
+	return fmt.Sprintf("accessToken:%s", userId.String())
 }
 
 func GetRefreshToken(userId uuid.UUID) string {
-	return fmt.Sprintf("refreshToken%s", userId.String())
+	return fmt.Sprintf("refreshToken:%s", userId.String())
+}
+
+func GetUser(userId uuid.UUID) string {
+    return fmt.Sprintf("user:%s", userId.String())
 }

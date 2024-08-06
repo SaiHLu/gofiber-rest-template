@@ -13,8 +13,8 @@ type UserService interface {
 	GetOneByEmail(string) (entity.User, error)
 	GetOneById(uuid.UUID) (entity.User, error)
 	Create(dto.CreateUserDto) (entity.User, error)
-	Delete(uint) (entity.User, error)
-	Update(uint, dto.UpdateUserDto) (entity.User, error)
+	Delete(uuid.UUID) (entity.User, error)
+	Update(uuid.UUID, dto.UpdateUserDto) (entity.User, error)
 }
 
 type service struct {
@@ -71,7 +71,7 @@ func (u *service) Create(body dto.CreateUserDto) (entity.User, error) {
 	return user, nil
 }
 
-func (u *service) Update(id uint, body dto.UpdateUserDto) (entity.User, error) {
+func (u *service) Update(id uuid.UUID, body dto.UpdateUserDto) (entity.User, error) {
 	user, err := u.repo.Update(id, body)
 	if err != nil {
 		return entity.User{}, err
@@ -80,7 +80,7 @@ func (u *service) Update(id uint, body dto.UpdateUserDto) (entity.User, error) {
 	return user, nil
 }
 
-func (u *service) Delete(id uint) (entity.User, error) {
+func (u *service) Delete(id uuid.UUID) (entity.User, error) {
 	user, err := u.repo.Delete(id)
 	if err != nil {
 		return entity.User{}, err

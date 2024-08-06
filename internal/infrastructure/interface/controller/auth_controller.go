@@ -57,7 +57,6 @@ func (a *AuthController) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(presenter.ErrorJsonResponse("Invalid Credentials.", err.Error()))
 	}
 
-	a.cacheStorage.Set(constant.GetAccessToken(user.ID), []byte(accessToken), accessTokenTTL)
 	a.cacheStorage.Set(constant.GetRefreshToken(user.ID), []byte(refreshToken), refreshTokenTTL)
 
 	return c.Status(fiber.StatusOK).JSON(presenter.SuccessJsonResponse(map[string]string{"accessToken": accessToken}, "Login Success"))
