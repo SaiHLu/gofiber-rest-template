@@ -10,6 +10,7 @@ import (
 
 	"github.com/SaiHLu/rest-template/common"
 	"github.com/SaiHLu/rest-template/common/logger"
+	"github.com/SaiHLu/rest-template/common/util"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/cache"
 	api "github.com/SaiHLu/rest-template/internal/infrastructure/interface"
 	"github.com/SaiHLu/rest-template/internal/infrastructure/persistence/database"
@@ -75,8 +76,11 @@ func main() {
 		}
 	}()
 
+
+
 	api.SetupRoutes(app, postgresDB, cacheStorage)
 
+	util.AuditLogger(postgresDB, cacheStorage)
 	go func() {
 		if err := app.Listen(":8000"); err != nil {
 			logger.Error(err.Error())

@@ -8,6 +8,7 @@ import (
 	"github.com/SaiHLu/rest-template/internal/core/dto"
 	"github.com/SaiHLu/rest-template/internal/core/entity"
 	gormscope "github.com/SaiHLu/rest-template/internal/core/gorm_scope"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -70,7 +71,7 @@ func (r *postgresRepository) Create(body dto.CreateUserDto) (entity.User, error)
 	return user, nil
 }
 
-func (r *postgresRepository) Update(id uint, body dto.UpdateUserDto) (entity.User, error) {
+func (r *postgresRepository) Update(id uuid.UUID, body dto.UpdateUserDto) (entity.User, error) {
 	var user entity.User
 
 	result := r.db.Model(&user).Clauses(clause.Returning{}).Where("id = ?", id).Updates(&body)
@@ -86,7 +87,7 @@ func (r *postgresRepository) Update(id uint, body dto.UpdateUserDto) (entity.Use
 	return user, nil
 }
 
-func (r *postgresRepository) Delete(id uint) (entity.User, error) {
+func (r *postgresRepository) Delete(id uuid.UUID) (entity.User, error) {
 	var user entity.User
 
 	result := r.db.Clauses(clause.Returning{}).Where("id = ?", id).Delete(&user)

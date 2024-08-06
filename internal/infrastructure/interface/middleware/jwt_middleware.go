@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/SaiHLu/rest-template/common/constant"
 	"github.com/SaiHLu/rest-template/common/logger"
 	"github.com/SaiHLu/rest-template/internal/core/entity"
 	"github.com/SaiHLu/rest-template/internal/core/service"
@@ -17,7 +18,9 @@ func JwtMiddleware(userService service.UserService, cacheStorage cache.Cache) fu
 	return func(c *fiber.Ctx) error {
 		tokenInfo := c.Locals("user").(*jwt.Token)
 		claims := tokenInfo.Claims.(jwt.MapClaims)
-		userId := claims["id"].(uuid.UUID)
+		id := claims["id"]
+		userId, _ := uuid.Parse(id.(string))
+
 		var (
 			user       entity.User
 			err        error
@@ -31,7 +34,7 @@ func JwtMiddleware(userService service.UserService, cacheStorage cache.Cache) fu
 			return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
 		}
 
-		cachedUser, err = cacheStorage.Get(userId.String())
+		cachedUser, err = cacheStorage.Get(constant.GetUser(userId))
 		if err != nil {
 			logger.Error(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
@@ -43,22 +46,24 @@ func JwtMiddleware(userService service.UserService, cacheStorage cache.Cache) fu
 				return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
 			}
 
-			c.Locals("authUser", user)
+			c.Locals(constant.AuthUserCtx, user)
 		} else {
 			user, err = userService.GetOneById(userId)
 			if err != nil {
 				return c.Status(fiber.StatusUnauthorized).JSON(err.Error())
 			}
 
-			c.Locals("authUser", user)
+			c.Locals(constant.AuthUserCtx, user)
 			cachedUser, err = json.Marshal(user)
 			if err != nil {
 				logger.Error(err.Error())
 				return c.Status(fiber.StatusInternalServerError).JSON("Something went wrong")
 			}
 
-			cacheStorage.Set(user.ID.String(), cachedUser, time.Until(expireTime.Time))
+			cacheStorage.Set(constant.GetUser(userId), cachedUser, time.Until(expireTime.Time))
 		}
+
+		cacheStorage.Set(string(constant.UserIdCtx), []byte(user.ID.String()), -1)
 
 		return c.Next()
 	}
